@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Accessible Breadcrumb Trail -->
+<nav aria-label="Breadcrumbs" class="mb-4">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item">
+            <a href="/" class="text-decoration-none">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="/posts" class="text-decoration-none">Posts</a>
+        </li>
+        <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-inline-size: 20rem;">
+            {{ post.title }}
+        </li>
+    </ol>
+</nav>
+
+<!-- Single Post Article Card -->
+<article class="post-card p-4 p-md-5 mb-4">
+    <!-- Post Header -->
+    <header class="d-flex justify-content-between align-items-start gap-3 pb-3 mb-4 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">
+                    Post #{{ post.id }}
+                </span>
+                {% if post.published %}
+                    <span class="badge badge-published rounded-pill px-2 py-1">
+                        &#10003; Published
+                    </span>
+                {% else %}
+                    <span class="badge badge-draft rounded-pill px-2 py-1">
+                        &#9998; Draft
+                    </span>
+                {% endif %}
+            </div>
+            <h1 class="h2 fw-bold text-dark mb-0">
+                {{ post.title }}
+            </h1>
+        </div>
+    </header>
+
+    <!-- Post Content Body -->
+    <div class="post-content fs-5 text-secondary mb-4 leading-relaxed">
+        <p class="mb-0">
+            {{ post.content }}
+        </p>
+    </div>
+
+    <!-- Metadata & Rating Box -->
+    <div class="p-3 bg-light rounded border d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 small text-muted">
+        <div>
+            {% if post.rating %}
+                <span class="text-warning-emphasis fw-medium">
+                    &#11088; Rating: <strong>{{ post.rating }}/5</strong>
+                </span>
+            {% else %}
+                <span class="text-muted fst-italic">
+                    Rating: Not rated yet
+                </span>
+            {% endif %}
+        </div>
+        <div>
+            Status: <strong class="text-dark">{% if post.published %}Public / Published{% else %}Unpublished Draft{% endif %}</strong>
+        </div>
+    </div>
+
+    <!-- Actions / Navigation Bar -->
+    <footer class="d-flex justify-content-between align-items-center pt-3 border-top">
+        <a href="/" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+            <span>&larr;</span>
+            <span>Back to All Posts</span>
+        </a>
+        <a href="/api/posts/{{ post.id }}" target="_blank" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+            <span>View Raw JSON</span>
+            <span>&rarr;</span>
+        </a>
+    </footer>
+</article>
+{% endblock content %}

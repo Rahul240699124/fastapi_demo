@@ -1,0 +1,157 @@
+:root {
+  --app-primary: #0d6efd;
+  --app-primary-hover: #0b5ed7;
+  --app-bg: #f8f9fa;
+  --app-surface: #ffffff;
+  --app-text: #212529;
+  --app-muted: #6c757d;
+  --app-border: #dee2e6;
+  --app-radius: 0.75rem;
+  --app-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+  --app-shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+/* Base resets & layout */
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--app-text);
+  background-color: var(--app-bg);
+  min-block-size: 100vh;
+}
+
+/* Ensure flex/grid items with unbreakable text do not cause layout overflow */
+.post-card,
+.sidebar-widget,
+.navbar-brand {
+  min-inline-size: 0;
+}
+
+/* Accessible focus ring indicators */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Header & Navigation
+   ========================================================================== */
+.site-header {
+  box-shadow: var(--app-shadow-sm);
+  background-color: #1e293b !important;
+}
+
+.site-navbar .navbar-brand {
+  letter-spacing: -0.02em;
+}
+
+.site-navbar .nav-link {
+  transition: color 0.15s ease-in-out;
+  padding-inline: 0.75rem;
+}
+
+.site-navbar .nav-link[aria-current="page"] {
+  color: #ffffff !important;
+  font-weight: 600;
+  border-block-end: 2px solid var(--app-primary);
+}
+
+/* ==========================================================================
+   Post Cards (Home Page)
+   ========================================================================== */
+.post-card {
+  background-color: var(--app-surface);
+  border-radius: var(--app-radius);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--app-shadow-md);
+}
+
+.post-card .card-title {
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.post-card .card-title a {
+  transition: color 0.15s ease;
+}
+
+.post-card .card-title a:hover {
+  color: var(--app-primary) !important;
+}
+
+.post-card .card-text {
+  line-height: 1.6;
+}
+
+/* Badge customizations */
+.badge-published {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-draft {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+/* ==========================================================================
+   Sidebar Widgets
+   ========================================================================== */
+.sidebar-widget {
+  background-color: var(--app-surface);
+  border-radius: var(--app-radius);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-sm);
+  padding: 1.25rem;
+  margin-block-end: 1.5rem;
+}
+
+.sidebar-widget .widget-title {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--app-muted);
+  margin-block-end: 1rem;
+  padding-block-end: 0.5rem;
+  border-block-end: 1px solid var(--app-border);
+}
+
+/* Sticky sidebar on desktop viewports */
+@media (min-width: 992px) {
+  .sticky-sidebar {
+    position: sticky;
+    inset-block-start: 5.5rem;
+  }
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer {
+  background-color: #0f172a;
+  color: #94a3b8;
+  border-block-start: 1px solid #334155;
+  margin-block-start: auto;
+}
+
+.site-footer a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.site-footer a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
