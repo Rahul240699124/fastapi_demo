@@ -35,9 +35,25 @@
                     </span>
                 {% endif %}
             </div>
-            <h1 class="h2 fw-bold text-dark mb-0">
+            <h1 class="h2 fw-bold text-dark mb-3">
                 {{ post.title }}
             </h1>
+            <!-- Author + date -->
+            <div class="d-flex align-items-center gap-2">
+                {% with author = post.author %}{% include "partials/author_avatar.html" %}{% endwith %}
+                <div class="lh-sm small">
+                    {% if post.author %}
+                        By <a href="/users/{{ post.author.id }}/posts" class="fw-semibold text-dark text-decoration-none">{{ post.author.username }}</a>
+                    {% else %}
+                        By <span class="fst-italic">Unknown author</span>
+                    {% endif %}
+                    {% if post.date_posted %}
+                        <div class="text-muted">
+                            <time datetime="{{ post.date_posted.isoformat() }}">{{ post.date_posted.strftime("%B %d, %Y at %H:%M") }}</time>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </header>
 
@@ -62,6 +78,9 @@
             {% endif %}
         </div>
         <div>
+            &#10084;&#65039; <strong class="text-dark">{{ post.likes or 0 }}</strong> {% if post.likes == 1 %}like{% else %}likes{% endif %}
+        </div>
+        <div>
             Status: <strong class="text-dark">{% if post.published %}Public / Published{% else %}Unpublished Draft{% endif %}</strong>
         </div>
     </div>
@@ -72,6 +91,11 @@
             <span>&larr;</span>
             <span>Back to All Posts</span>
         </a>
+        {% if post.author %}
+            <a href="/users/{{ post.author.id }}/posts" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+                More by {{ post.author.username }}
+            </a>
+        {% endif %}
         <a href="/api/posts/{{ post.id }}" target="_blank" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
             <span>View Raw JSON</span>
             <span>&rarr;</span>

@@ -155,3 +155,20 @@ button:focus-visible,
   color: #ffffff;
   text-decoration: underline;
 }
+
+/* Author avatars (templates/partials/author_avatar.html) */
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-initial {
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+    font-weight: 700;
+    line-height: 1;
+}

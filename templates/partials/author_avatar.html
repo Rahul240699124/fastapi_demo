@@ -1,0 +1,7 @@
+{# Small round avatar for a user. Expects `author` (a models.User or None) and optional `size` (px). #}
+{% set size = size | default(36) %}
+{# image_path returns the user's own picture, or /static/profile_pics/default.png if they have none #}
+<img src="{{ author.image_path if author else '/static/profile_pics/default.png' }}"
+    alt="{{ author.username if author else 'Unknown author' }}" class="avatar"
+    width="{{ size }}" height="{{ size }}"
+    onerror="this.onerror=null; this.src='/static/profile_pics/default.png';">

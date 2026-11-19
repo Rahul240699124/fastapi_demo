@@ -1,0 +1,45 @@
+{# One post in a list. Expects `post` (a models.Post, with post.author loaded). #}
+<article class="post-card p-4">
+    <!-- Author + date -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+        {% with author = post.author %}{% include "partials/author_avatar.html" %}{% endwith %}
+        <div class="lh-sm">
+            {% if post.author %}
+                <a href="/users/{{ post.author.id }}/posts" class="fw-semibold text-dark text-decoration-none">
+                    {{ post.author.username }}
+                </a>
+            {% else %}
+                <span class="fw-semibold text-muted fst-italic">Unknown author</span>
+            {% endif %}
+            {% if post.date_posted %}
+                <div class="small text-muted">
+                    <time datetime="{{ post.date_posted.isoformat() }}">{{ post.date_posted.strftime("%b %d, %Y") }}</time>
+                </div>
+            {% endif %}
+        </div>
+        <div class="ms-auto">
+            {% if post.published %}
+                <span class="badge badge-published rounded-pill px-2 py-1 small">&#10003; Published</span>
+            {% else %}
+                <span class="badge badge-draft rounded-pill px-2 py-1 small">&#9998; Draft</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <h2 class="h5 card-title fw-bold mb-2">
+        <a href="/posts/{{ post.id }}" class="text-decoration-none text-dark">{{ post.title }}</a>
+    </h2>
+
+    <p class="card-text text-secondary mb-3">
+        {{ post.content | truncate(220) }}
+    </p>
+
+    <div class="d-flex justify-content-between align-items-center pt-3 border-top small text-muted">
+        <span>&#10084;&#65039; {{ post.likes or 0 }} {% if post.likes == 1 %}like{% else %}likes{% endif %}</span>
+        {% if post.rating %}
+            <span class="text-warning-emphasis fw-medium">&#11088; Rating: <strong>{{ post.rating }}/5</strong></span>
+        {% else %}
+            <span class="fst-italic">Unrated</span>
+        {% endif %}
+    </div>
+</article>

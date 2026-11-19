@@ -14,53 +14,16 @@
 {% if posts %}
     <div class="vstack gap-3">
         {% for post in posts %}
-            <article class="post-card p-4">
-                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                    <h2 class="h5 card-title fw-bold mb-0">
-                        <a href="/posts/{{ post.id }}" class="text-decoration-none text-dark">
-                            {{ post.title }}
-                        </a>
-                    </h2>
-                    <div>
-                        {% if post.published %}
-                            <span class="badge badge-published rounded-pill px-2 py-1 small">
-                                &#10003; Published
-                            </span>
-                        {% else %}
-                            <span class="badge badge-draft rounded-pill px-2 py-1 small">
-                                &#9998; Draft
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <p class="card-text text-secondary mb-3">
-                    {{ post.content }}
-                </p>
-
-                <div class="d-flex justify-content-between align-items-center pt-3 border-top small text-muted">
-                    <span class="fw-medium text-dark">
-                        Post ID: <code>#{{ post.id }}</code>
-                    </span>
-                    <div>
-                        {% if post.rating %}
-                            <span class="text-warning-emphasis fw-medium">
-                                &#11088; Rating: <strong>{{ post.rating }}/5</strong>
-                            </span>
-                        {% else %}
-                            <span class="text-muted fst-italic">
-                                Unrated
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-            </article>
+            {% include "partials/post_card.html" %}
         {% endfor %}
     </div>
 {% else %}
     <div class="alert alert-info border-0 shadow-sm p-4 text-center" role="alert">
         <h4 class="alert-heading fw-bold">No Posts Available</h4>
-        <p class="mb-0 text-muted">There are currently no posts in the collection. Add items to <code>posts</code> in <code>main.py</code> or via your API.</p>
+        <p class="mb-0 text-muted">
+            The database has no posts yet. Create a user with <code>POST /api/users</code>, then a post with
+            <code>POST /api/posts</code> from the <a href="/docs">API docs</a>.
+        </p>
     </div>
 {% endif %}
 {% endblock content %}

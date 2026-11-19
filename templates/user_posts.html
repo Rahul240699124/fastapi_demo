@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{#
+  Rendered by GET /users/{user_id}/posts.
+  Uses `user` if main.py passes it; otherwise takes the author from the first post.
+#}
+{% block content %}
+{% set author = user if user is defined and user else (posts[0].author if posts else none) %}
+<nav aria-label="Breadcrumbs" class="mb-4">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="/posts" class="text-decoration-none">Posts</a></li>
+        <li class="breadcrumb-item active" aria-current="page">
+            {% if author %}{{ author.username }}{% else %}User{% endif %}
+        </li>
+    </ol>
+</nav>
+
+<!-- Author header -->
+<div class="post-card p-4 mb-4 d-flex align-items-center gap-3">
+    {% if author %}
+        {% with size = 64 %}{% include "partials/author_avatar.html" %}{% endwith %}
+        <div class="flex-grow-1">
+            <h1 class="h4 fw-bold mb-1 text-dark">{{ author.username }}</h1>
+            <p class="small text-muted mb-0">{{ author.email }}</p>
+        </div>
+    {% else %}
+        <h1 class="h4 fw-bold mb-0 text-dark flex-grow-1">{{ title }}</h1>
+    {% endif %}
+    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
+        {{ posts|length }} {% if posts|length == 1 %}Post{% else %}Posts{% endif %}
+    </span>
+</div>
+
+{% if posts %}
+    <div class="vstack gap-3">
+        {% for post in posts %}
+            {% include "partials/post_card.html" %}
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info border-0 shadow-sm p-4 text-center" role="alert">
+        <h4 class="alert-heading fw-bold">No Posts Yet</h4>
+        <p class="mb-0 text-muted">This user hasn't written any posts.</p>
+    </div>
+{% endif %}
+{% endblock content %}
