@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from urllib.parse import quote
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -29,14 +30,14 @@ class User(Base):
     date_updated: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),  # refreshed on every UPDATE
+        onupdate=lambda: datetime.now(UTC),
         server_default=func.now(),
         nullable=False,
     )
 
     posts: Mapped[list[Post]] = relationship(
         back_populates="author",
-        cascade="all, delete-orphan",
+        cascade="all, delete-orphan",  ## for also deleting posts when a user is deleted
     )
 
     reset_tokens: Mapped[list[PasswordResetToken]] = relationship(
@@ -48,7 +49,8 @@ class User(Base):
     def image_path(self) -> str:
         # Profile pictures are served from the local /static folder.
         if self.image_file:
-            return f"/static/profile_pics/{self.image_file}"
+            # quote() makes the name URL-safe, e.g. "my pic.jpg" -> "my%20pic.jpg"
+            return f"/media/profile_pics/{quote(self.image_file)}"
         return "/static/profile_pics/default.png"
 
 

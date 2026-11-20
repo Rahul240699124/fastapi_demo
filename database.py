@@ -1,26 +1,39 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from typing import Annotated
 
-# Format: mysql+pymysql://<user>:<password>@<host>:<port>/<database>
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+
+# Format: mysql+aiomysql://<user>:<password>@<host>:<port>/<database>
 # User "root" with no password -> nothing after the colon.
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:@localhost:3306/fastapi_demo?charset=utf8mb4"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    pool_pre_ping=True,  # reconnect if MySQL closed an idle connection
+# command for use Async uv add aiomysql
+SQLALCHEMY_DATABASE_URL = (
+    "mysql+aiomysql://root:@localhost:3306/fastapi_demo?charset=utf8mb4"
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+engine = create_async_engine(
+    SQLALCHEMY_DATABASE_URL,
+    pool_pre_ping=True,
+)
+AsyncSessionLocal = async_sessionmaker(
+    class_=AsyncSession,
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    expire_on_commit=False,
+)
 
 
 class Base(DeclarativeBase):
-    # WAMP's MySQL defaults to MyISAM, which silently ignores foreign keys
-    # (no ON DELETE CASCADE) and transactions. Force InnoDB for every table.
     __table_args__ = {"mysql_engine": "InnoDB"}
 
 
-def get_db():
-    db = SessionLocal()
+async def get_db():
+    db = AsyncSessionLocal()
     try:
         yield db
     finally:
-        db.close()
+        await db.close()
+
+
+DbSession = Annotated[AsyncSession, Depends(get_db)]
