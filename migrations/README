@@ -1,0 +1,8 @@
+Alembic database migrations (see migrations/env.py for a full explanation).
+
+  uv run alembic revision --autogenerate -m "what changed"   # create a migration from models.py
+  uv run alembic upgrade head                                 # apply pending migrations
+  uv run alembic downgrade -1                                 # undo the last one
+  uv run alembic current / history                            # where the DB is / all revisions
+
+versions/  one file per migration, chained by their revision / down_revision ids.

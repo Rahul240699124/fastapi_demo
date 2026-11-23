@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{#
+  ONE template for both "New post" and "Edit post".
+    /posts/new             -> post is None           -> POST  /api/posts
+    /posts/{post_id}/edit  -> post = the post to edit -> PATCH /api/posts/{post_id}
+  The server pre-fills the fields when editing; JavaScript sends the form to the API.
+  Only the author may edit: the page checks it for a friendly message, and the API
+  enforces it anyway (403) - never rely on the browser alone for security.
+#}
+{% block content %}
+<nav aria-label="Breadcrumbs" class="mb-4">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+        {% if post %}
+            <li class="breadcrumb-item text-truncate" style="max-inline-size: 16rem;">
+                <a href="/posts/{{ post.id }}" class="text-decoration-none">{{ post.title }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        {% else %}
+            <li class="breadcrumb-item active" aria-current="page">New Post</li>
+        {% endif %}
+    </ol>
+</nav>
+
+<div class="post-card p-4 p-md-5">
+    <h1 class="h3 fw-bold text-dark mb-4">{% if post %}Edit post{% else %}Write a new post{% endif %}</h1>
+
+    <div id="form-alert"></div>
+
+    <form id="post-form" novalidate
+        data-post-id="{{ post.id if post else '' }}"
+        data-author-id="{{ post.user_id if post else '' }}">
+        <div class="mb-3">
+            <label for="title" class="form-label fw-medium">Title</label>
+            <input type="text" class="form-control" id="title" name="title"
+                minlength="3" maxlength="100" value="{{ post.title if post else '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label fw-medium">Content</label>
+            <textarea class="form-control" id="content" name="content" rows="8"
+                minlength="10" maxlength="1000" required>{{ post.content if post else '' }}</textarea>
+            <div class="form-text"><span id="content-count">0</span>/1000 characters (at least 10).</div>
+        </div>
+        <div class="row g-3 align-items-end mb-4">
+            <div class="col-sm-6">
+                <label for="rating" class="form-label fw-medium">Rating</label>
+                <select class="form-select" id="rating" name="rating">
+                    <option value="" {% if not post or not post.rating %}selected{% endif %}>No rating</option>
+                    {% for n in range(1, 6) %}
+                        <option value="{{ n }}" {% if post and post.rating == n %}selected{% endif %}>
+                            {{ "⭐" * n }} ({{ n }}/5)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="published" name="published"
+                        {% if not post or post.published %}checked{% endif %}>
+                    <label class="form-check-label" for="published">Published (unchecked = draft)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between gap-2">
+            <a href="{{ '/posts/' ~ post.id if post else '/' }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                {% if post %}Save changes{% else %}Publish post{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    (async () => {
+        if (!App.requireLogin()) return;
+
+        const form = document.getElementById("post-form");
+        const alertBox = document.getElementById("form-alert");
+        const button = document.getElementById("submit-btn");
+        const postId = form.dataset.postId; // "" when creating
+        const isEdit = postId !== "";
+
+        // Live character counter for the content field.
+        const counter = document.getElementById("content-count");
+        const updateCount = () => (counter.textContent = form.content.value.length);
+        form.content.addEventListener("input", updateCount);
+        updateCount();
+
+        // Editing someone else's post? Say so up front (the API would answer 403 anyway).
+        if (isEdit) {
+            const me = await App.getCurrentUser();
+            if (!me || String(me.id) !== form.dataset.authorId) {
+                App.showAlert(alertBox, "You can only edit your own posts.", "warning");
+                form.querySelectorAll("input, textarea, select, button").forEach((el) => (el.disabled = true));
+                return;
+            }
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const body = {
+                title: form.title.value.trim(),
+                content: form.content.value.trim(),
+                published: form.published.checked,
+                rating: form.rating.value ? Number(form.rating.value) : null, // "" -> no rating
+            };
+            App.setBusy(button, true, "Saving…");
+            try {
+                const post = isEdit
+                    ? await App.api(`/api/posts/${postId}`, { method: "PATCH", json: body })
+                    : await App.api("/api/posts", { method: "POST", json: body });
+                window.location.href = `/posts/${post.id}`; // the new/updated post page
+            } catch (error) {
+                App.showAlert(alertBox, error.message);
+                App.setBusy(button, false);
+            }
+        });
+    })();
+</script>
+{% endblock scripts %}

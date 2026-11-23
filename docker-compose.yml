@@ -1,0 +1,48 @@
+# docker-compose.yml - runs the WHOLE stack with one command:
+#
+#     docker compose up --build      -> start (open http://localhost:8080)
+#     docker compose logs -f app     -> follow the app's logs
+#     docker compose down            -> stop (data is kept in the volumes)
+#     docker compose down -v         -> stop AND delete the database + uploads
+#
+# Two containers ("services") on a private network; they reach each other by
+# service name, so the app connects to the host called "db".
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: fastapi_demo
+      MYSQL_USER: blog
+      MYSQL_PASSWORD: blogpass          # demo values - use real secrets in production
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql_data:/var/lib/mysql       # keep the data when the container is recreated
+    # No "ports:" -> MySQL is reachable only by the app, not from your machine
+    # (and it can't clash with your WAMP MySQL on port 3306).
+    healthcheck:                        # "healthy" once MySQL accepts connections
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ublog", "-pblogpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .                            # build the image from ./Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy      # wait until MySQL is really ready
+    environment:
+      # These override config.py defaults (there is no .env inside the image).
+      DATABASE_URL: mysql+aiomysql://blog:blogpass@db:3306/fastapi_demo?charset=utf8mb4
+      SECRET_KEY: change-this-to-a-long-random-string-in-production
+      DEBUG: "false"
+      CORS_ORIGINS: '["http://localhost:3000"]'
+    ports:
+      - "8080:8000"                     # your machine's 8080 -> the container's 8000
+                                        # (8080 so it doesn't clash with `fastapi dev` on 8000)
+    volumes:
+      - media_data:/app/media           # uploaded pictures survive restarts
+
+volumes:
+  mysql_data:
+  media_data:

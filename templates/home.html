@@ -1,15 +1,42 @@
 {% extends "layout.html" %}
 
+{#
+  Home page: search + sort + pagination, rendered on the SERVER.
+  The toolbar is a plain GET form, so the URL becomes /?search=fastapi&sort=rating&page=2
+  - shareable, bookmarkable, and works without JavaScript. main.py reads those query
+  parameters and calls the same query_posts() function as GET /api/posts.
+#}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="h3 fw-bold mb-1 text-dark">Recent Posts</h1>
         <p class="text-muted small mb-0">Browse through the latest articles and tutorial notes.</p>
     </div>
     <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
-        {{ posts|length }} {% if posts|length == 1 %}Post{% else %}Posts{% endif %}
+        {{ total }} {% if total == 1 %}Post{% else %}Posts{% endif %}
     </span>
 </div>
+
+<!-- Search / sort toolbar -->
+<form method="get" action="/" class="post-card p-3 mb-4 d-flex flex-wrap gap-2" role="search">
+    <input type="search" name="search" class="form-control flex-grow-1 w-auto" maxlength="100"
+        placeholder="Search title or content…" value="{{ search or '' }}" aria-label="Search posts">
+    <select name="sort" class="form-select w-auto" aria-label="Sort posts">
+        <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest first</option>
+        <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Oldest first</option>
+        <option value="rating" {% if sort == "rating" %}selected{% endif %}>Top rated</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if search %}
+        <a href="/" class="btn btn-outline-secondary">Clear</a>
+    {% endif %}
+</form>
+
+{% if search %}
+    <p class="small text-muted mb-3">
+        {{ total }} result{% if total != 1 %}s{% endif %} for <strong>“{{ search }}”</strong>
+    </p>
+{% endif %}
 
 {% if posts %}
     <div class="vstack gap-3">
@@ -17,12 +44,18 @@
             {% include "partials/post_card.html" %}
         {% endfor %}
     </div>
+    {% include "partials/pagination.html" %}
+{% elif search %}
+    <div class="alert alert-info border-0 shadow-sm p-4 text-center" role="alert">
+        <h4 class="alert-heading fw-bold">No matching posts</h4>
+        <p class="mb-0 text-muted">Try another search term, or <a href="/">show all posts</a>.</p>
+    </div>
 {% else %}
     <div class="alert alert-info border-0 shadow-sm p-4 text-center" role="alert">
         <h4 class="alert-heading fw-bold">No Posts Available</h4>
         <p class="mb-0 text-muted">
-            The database has no posts yet. Create a user with <code>POST /api/users</code>, then a post with
-            <code>POST /api/posts</code> from the <a href="/docs">API docs</a>.
+            Be the first! <a href="/register">Create an account</a> or <a href="/login">log in</a>,
+            then <a href="/posts/new">write a post</a>.
         </p>
     </div>
 {% endif %}

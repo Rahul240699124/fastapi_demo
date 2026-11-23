@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{#
+  Login page. The form is NOT submitted to the server the classic way; JavaScript sends
+  it to POST /api/auth/token (the same endpoint the /docs "Authorize" button uses),
+  stores the returned JWT, and goes back to where the user came from (?next=...).
+#}
+{% block content %}
+<div class="post-card p-4 p-md-5 mx-auto" style="max-inline-size: 30rem;">
+    <h1 class="h3 fw-bold text-dark mb-1">Log in</h1>
+    <p class="text-muted small mb-4">Welcome back! Use your username or email.</p>
+
+    <div id="form-alert"></div>
+
+    <form id="login-form" novalidate>
+        <div class="mb-3">
+            <label for="username" class="form-label fw-medium">Username or email</label>
+            <input type="text" class="form-control" id="username" name="username" autocomplete="username" required>
+        </div>
+        <div class="mb-2">
+            <label for="password" class="form-label fw-medium">Password</label>
+            <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <div class="text-end mb-4">
+            <a href="/forgot-password" class="small text-decoration-none">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="submit-btn">Log in</button>
+    </form>
+
+    <p class="text-center small text-muted mt-4 mb-0">
+        No account yet? <a href="/register" class="text-decoration-none">Sign up</a>
+    </p>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    // Already logged in? Nothing to do here.
+    if (App.auth.getToken()) window.location.replace(App.safeNext());
+
+    const form = document.getElementById("login-form");
+    const alertBox = document.getElementById("form-alert");
+    const button = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault(); // stop the browser's normal form submit (page reload)
+        App.setBusy(button, true, "Logging in…");
+        try {
+            // OAuth2 login expects FORM fields "username" and "password" (not JSON).
+            const data = await App.api("/api/auth/token", {
+                method: "POST",
+                form: { username: form.username.value.trim(), password: form.password.value },
+                auth: false,
+            });
+            App.auth.setToken(data.access_token);
+            window.location.href = App.safeNext("/");
+        } catch (error) {
+            App.showAlert(alertBox, error.message);
+            App.setBusy(button, false);
+        }
+    });
+</script>
+{% endblock scripts %}

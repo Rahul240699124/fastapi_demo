@@ -85,6 +85,15 @@
         </div>
     </div>
 
+    <!-- Author-only actions: hidden (d-none) for everyone; the script below shows them
+         when the logged-in user is this post's author. The API still checks it (403). -->
+    <div id="owner-actions" class="d-none d-flex justify-content-end gap-2 mb-3"
+        data-post-id="{{ post.id }}" data-author-id="{{ post.user_id }}">
+        <a href="/posts/{{ post.id }}/edit" class="btn btn-outline-primary btn-sm">&#9998; Edit</a>
+        <button type="button" class="btn btn-outline-danger btn-sm" id="delete-post-btn">Delete</button>
+    </div>
+    <div id="post-alert"></div>
+
     <!-- Actions / Navigation Bar -->
     <footer class="d-flex justify-content-between align-items-center pt-3 border-top">
         <a href="/" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
@@ -103,3 +112,25 @@
     </footer>
 </article>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    (async () => {
+        const actions = document.getElementById("owner-actions");
+        const me = await App.getCurrentUser(); // null when not logged in
+        if (!me || String(me.id) !== actions.dataset.authorId) return;
+
+        actions.classList.remove("d-none"); // it's my post -> show Edit / Delete
+
+        document.getElementById("delete-post-btn").addEventListener("click", async () => {
+            if (!confirm("Delete this post? This cannot be undone.")) return;
+            try {
+                await App.api(`/api/posts/${actions.dataset.postId}`, { method: "DELETE" }); // 204
+                window.location.href = `/users/${me.id}/posts`;
+            } catch (error) {
+                App.showAlert(document.getElementById("post-alert"), error.message);
+            }
+        });
+    })();
+</script>
+{% endblock scripts %}

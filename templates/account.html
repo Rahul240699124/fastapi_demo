@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+
+{#
+  My Account. The server sends an empty shell; JavaScript loads the user with
+  GET /api/users/me (login required) and wires up:
+    - PUT    /api/users/me/picture   upload a picture (multipart/form-data)
+    - DELETE /api/users/me/picture   back to the default picture
+    - PATCH  /api/users/{id}         change username / email / password
+    - DELETE /api/users/{id}         delete the account (and all its posts)
+#}
+{% block content %}
+<nav aria-label="Breadcrumbs" class="mb-4">
+    <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">My Account</li>
+    </ol>
+</nav>
+
+<div id="page-alert"></div>
+
+<!-- Shown until /api/users/me has answered -->
+<div id="account-loading" class="post-card p-4 text-center text-muted">Loading your account…</div>
+
+<div id="account" class="vstack gap-4 d-none">
+    <!-- Profile header -->
+    <div class="post-card p-4 d-flex align-items-center gap-3">
+        <img id="profile-avatar" src="/static/profile_pics/default.png" alt="Your profile picture"
+            class="avatar" width="80" height="80"
+            onerror="this.onerror=null; this.src='/static/profile_pics/default.png';">
+        <div class="flex-grow-1 lh-sm">
+            <h1 class="h4 fw-bold mb-1 text-dark" id="profile-username"></h1>
+            <div class="small text-muted" id="profile-email"></div>
+            <div class="small text-muted" id="profile-joined"></div>
+        </div>
+        <a id="my-posts-link" href="#" class="btn btn-outline-secondary btn-sm">My Posts</a>
+    </div>
+
+    <!-- Profile picture -->
+    <section class="post-card p-4">
+        <h2 class="h5 fw-bold text-dark mb-1">Profile picture</h2>
+        <p class="small text-muted mb-3">JPEG, PNG or WebP, up to 2 MB.</p>
+        <div id="picture-alert"></div>
+        <form id="picture-form" class="d-flex flex-wrap align-items-center gap-2">
+            <input type="file" class="form-control w-auto flex-grow-1" id="picture" name="file"
+                accept="image/jpeg,image/png,image/webp" required>
+            <button type="submit" class="btn btn-primary" id="picture-btn">Upload</button>
+            <button type="button" class="btn btn-outline-danger" id="remove-picture-btn">Remove</button>
+        </form>
+    </section>
+
+    <!-- Account details -->
+    <section class="post-card p-4">
+        <h2 class="h5 fw-bold text-dark mb-3">Account details</h2>
+        <div id="details-alert"></div>
+        <form id="details-form" novalidate>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="username" class="form-label fw-medium">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" minlength="3" maxlength="50" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="email" class="form-label fw-medium">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" maxlength="120" required>
+                </div>
+                <div class="col-12">
+                    <label for="password" class="form-label fw-medium">New password</label>
+                    <input type="password" class="form-control" id="password" name="password"
+                        minlength="8" maxlength="128" autocomplete="new-password" placeholder="Leave empty to keep your current password">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3" id="details-btn">Save changes</button>
+        </form>
+    </section>
+
+    <!-- Danger zone -->
+    <section class="post-card p-4 border-danger-subtle">
+        <h2 class="h5 fw-bold text-danger mb-1">Delete account</h2>
+        <p class="small text-muted mb-3">This permanently deletes your account and all your posts.</p>
+        <button type="button" class="btn btn-outline-danger" id="delete-account-btn">Delete my account</button>
+    </section>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    (async () => {
+        if (!App.requireLogin()) return; // not logged in -> /login?next=/account
+
+        let user = await App.getCurrentUser();
+        if (!user) { App.auth.logout(); return; } // token expired
+
+        const $ = (id) => document.getElementById(id);
+
+        // ---- fill the page with the user's data
+        function render() {
+            $("profile-avatar").src = user.image_path;
+            $("profile-username").textContent = user.username; // textContent = no HTML injection
+            $("profile-email").textContent = user.email;
+            $("profile-joined").textContent =
+                "Joined " + new Date(user.date_created).toLocaleDateString(undefined, { year: "numeric", month: "long" });
+            $("my-posts-link").href = `/users/${user.id}/posts`;
+            $("username").value = user.username;
+            $("email").value = user.email;
+            $("remove-picture-btn").classList.toggle("d-none", !user.image_file);
+        }
+
+        // After a change: keep our copy, redraw the page AND the navbar avatar/name.
+        async function updated(newUser) {
+            user = newUser;
+            render();
+            await App.getCurrentUser({ refresh: true });
+            App.renderNav();
+        }
+
+        render();
+        $("account-loading").remove();
+        $("account").classList.remove("d-none");
+        if (new URLSearchParams(location.search).get("welcome")) {
+            App.showAlert($("page-alert"), "Welcome! Your account is ready. Add a profile picture below.", "success");
+        }
+
+        // ---- upload a picture
+        $("picture-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const file = $("picture").files[0];
+            if (!file) return;
+            // FormData builds a multipart/form-data body. The field name "file" must
+            // match the parameter name in the route: `file: UploadFile`.
+            const body = new FormData();
+            body.append("file", file);
+            App.setBusy($("picture-btn"), true, "Uploading…");
+            try {
+                await updated(await App.api("/api/users/me/picture", { method: "PUT", body }));
+                App.showAlert($("picture-alert"), "Profile picture updated.", "success");
+                event.target.reset();
+            } catch (error) {
+                App.showAlert($("picture-alert"), error.message); // 413 too big, 415 wrong type...
+            } finally {
+                App.setBusy($("picture-btn"), false);
+            }
+        });
+
+        $("remove-picture-btn").addEventListener("click", async () => {
+            try {
+                await updated(await App.api("/api/users/me/picture", { method: "DELETE" }));
+                App.showAlert($("picture-alert"), "Profile picture removed.", "success");
+            } catch (error) {
+                App.showAlert($("picture-alert"), error.message);
+            }
+        });
+
+        // ---- edit details: send ONLY what changed (PATCH = partial update)
+        $("details-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const changes = {};
+            const username = $("username").value.trim();
+            const email = $("email").value.trim();
+            if (username !== user.username) changes.username = username;
+            if (email !== user.email) changes.email = email;
+            if ($("password").value) changes.password = $("password").value;
+
+            if (Object.keys(changes).length === 0) {
+                App.showAlert($("details-alert"), "Nothing to save.", "info");
+                return;
+            }
+            App.setBusy($("details-btn"), true, "Saving…");
+            try {
+                await updated(await App.api(`/api/users/${user.id}`, { method: "PATCH", json: changes }));
+                $("password").value = "";
+                App.showAlert($("details-alert"), "Account updated.", "success");
+            } catch (error) {
+                App.showAlert($("details-alert"), error.message);
+            } finally {
+                App.setBusy($("details-btn"), false);
+            }
+        });
+
+        // ---- delete the account
+        $("delete-account-btn").addEventListener("click", async () => {
+            if (!confirm("Delete your account and ALL your posts? This cannot be undone.")) return;
+            try {
+                await App.api(`/api/users/${user.id}`, { method: "DELETE" });
+                App.auth.logout(); // forget the token and go home
+            } catch (error) {
+                App.showAlert($("page-alert"), error.message);
+            }
+        });
+    })();
+</script>
+{% endblock scripts %}

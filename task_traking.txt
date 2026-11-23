@@ -1,0 +1,48 @@
+Date: 18-11-2026
+Task Update
+FastAPI
+- Project Setup and Architecture
+- Jinja2 Template Integration and Layout Inheritance (layout.html, home.html, post.html)
+- Static Files Configuration (StaticFiles, main.css, Bootstrap 5)
+- Dynamic Routing and Path Parameters (/posts/{post_id})
+- Error Handling with HTTPException (404 Not Found)
+- Separating HTML Routes from OpenAPI Docs (include_in_schema=False)
+
+Date: 19-11-2026
+Task Update
+FastAPI
+- Database Setup and Connection Pooling (SQLAlchemy, create_engine, SessionLocal)
+- Dependency Injection with Depends(get_db)
+- SQLAlchemy 2.0 Declarative Models (User, Post, Mapped, mapped_column)
+- Relationships and Cascade Deletion (One-to-Many, cascade="all, delete-orphan")
+- Pydantic v2 Schemas and Validation (BaseModel, Field, EmailStr, ConfigDict)
+- User Registration and Password Hashing (duplicate checks)
+- Synchronous Database CRUD Operations
+- Global Exception Handlers for JSON API and HTML (error.html)
+- Jinja2 Partials (author_avatar.html)
+
+Date: 20-11-2026
+Task Update
+FastAPI
+- Migration to Asynchronous SQLAlchemy (create_async_engine, aiomysql, AsyncSession)
+- convert all Synchronized APIs to Asynchronized APIs
+- Cascading Record Deletion
+- Dynamic Media File Mounting (/media)
+
+Date: 23-11-2026
+Task Update
+FastAPI
+- Environment Variables and Settings Management (pydantic-settings, .env, .env.example)
+- Database Migrations with Alembic (async env.py, baseline migration, stamp, autogenerate check)
+- JWT Authentication (OAuth2PasswordBearer, login with username/email, get_current_user dependency)
+- Protected Routes and Authorization (401 vs 403, users can only modify their own account/posts)
+- Forgot / Reset Password Flow (hashed single-use expiring tokens, PasswordResetToken model)
+- File Uploads (UploadFile, content-type + size + magic-byte validation, run_in_threadpool)
+- Pagination, Search, Filtering and Sorting (Query params, Literal, count query, PostListResponse)
+- Nested Response Schemas (post.author via AuthorResponse + selectinload)
+- CORS and Custom Middleware (CORSMiddleware, request timing/logging, X-Process-Time-Ms header)
+- Background Tasks (welcome email and reset email via BackgroundTasks)
+- Logging Configuration (logging module instead of print)
+- Automated Testing with pytest (in-memory SQLite, dependency_overrides, fixtures, 39 tests)
+- Docker Deployment (Dockerfile with uv, docker-compose with MySQL, healthcheck, volumes)
+- Teaching comments added to every file

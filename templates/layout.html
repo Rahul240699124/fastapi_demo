@@ -57,11 +57,12 @@
                         </li>
                     </ul>
 
-                    <div class="d-flex align-items-center gap-2 text-white-50 small">
-                        <span
-                            class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">FastAPI
-                            v0.163+
-                        </span>
+                    <!-- Login-dependent buttons. static/js/api.js fills this in:
+                         "Log in / Sign up" for visitors, "New Post + user menu" when logged in.
+                         The links below are what visitors see before the script runs. -->
+                    <div id="auth-nav" class="d-flex align-items-center gap-2">
+                        <a class="btn btn-outline-light btn-sm" href="/login">Log in</a>
+                        <a class="btn btn-primary btn-sm" href="/register">Sign up</a>
                     </div>
                 </div>
             </div>
@@ -87,9 +88,14 @@
                             You are building a high-performance web application powered by <strong>FastAPI</strong> and
                             <strong>Jinja2</strong> templates.
                         </p>
-                        <div class="p-2 rounded bg-light border small text-muted">
+                        <div class="p-2 rounded bg-light border small text-muted mb-2">
                             💡 <strong>Tip:</strong> HTML endpoints use <code>HTMLResponse</code>, while APIs return
                             native Python dictionaries as JSON.
+                        </div>
+                        <div class="p-2 rounded bg-light border small text-muted">
+                            🔐 <strong>How login works:</strong> the pages call the JSON API with
+                            <code>fetch()</code> and send your JWT as an
+                            <code>Authorization: Bearer</code> header.
                         </div>
                     </div>
 
@@ -149,6 +155,12 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous">
     </script>
+
+    <!-- Our API client (token storage, fetch wrapper, navbar). Loaded on every page. -->
+    <script src="{{ url_for('static', path='js/api.js') }}"></script>
+
+    <!-- Page-specific JavaScript: child templates fill this block. -->
+    {% block scripts %}{% endblock scripts %}
 </body>
 
 </html>
