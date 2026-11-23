@@ -8,4 +8,19 @@ wheels/
 
 # Virtual environments
 .venv
-.md
+
+# Claude Code project notes
+CLAUDE.md
+
+# media folder
+media/
+
+
+# Secrets / local settings (copy .env.example -> .env)
+.env
+
+# Log files (includes the fake email outbox)
+logs/
+
+# Test & tool caches
+.pytest_cache/

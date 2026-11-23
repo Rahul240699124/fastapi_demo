@@ -22,8 +22,12 @@
         {% with size = 64 %}{% include "partials/author_avatar.html" %}{% endwith %}
         <div class="flex-grow-1">
             <h1 class="h4 fw-bold mb-1 text-dark">{{ author.username }}</h1>
-            <p class="small text-muted mb-0">{{ author.email }}</p>
+            {# Public page -> no email (same rule as AuthorResponse in the API). #}
+            <p class="small text-muted mb-0">Joined {{ author.date_created.strftime("%B %Y") }}</p>
         </div>
+        <!-- Shown by the script below only when this is YOUR page -->
+        <a href="/posts/new" id="write-post-btn" class="btn btn-primary btn-sm d-none"
+            data-user-id="{{ author.id }}">&#9998; Write a post</a>
     {% else %}
         <h1 class="h4 fw-bold mb-0 text-dark flex-grow-1">{{ title }}</h1>
     {% endif %}
@@ -45,3 +49,13 @@
     </div>
 {% endif %}
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    (async () => {
+        const button = document.getElementById("write-post-btn");
+        const me = await App.getCurrentUser();
+        if (button && me && String(me.id) === button.dataset.userId) button.classList.remove("d-none");
+    })();
+</script>
+{% endblock scripts %}

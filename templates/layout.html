@@ -57,10 +57,12 @@
                         </li>
                     </ul>
 
-                    <div class="d-flex align-items-center gap-2 text-white-50 small">
-                        <span
-                            class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">FastAPI
-                            v0.163+</span>
+                    <!-- Login-dependent buttons. static/js/api.js fills this in:
+                         "Log in / Sign up" for visitors, "New Post + user menu" when logged in.
+                         The links below are what visitors see before the script runs. -->
+                    <div id="auth-nav" class="d-flex align-items-center gap-2">
+                        <a class="btn btn-outline-light btn-sm" href="/login">Log in</a>
+                        <a class="btn btn-primary btn-sm" href="/register">Sign up</a>
                     </div>
                 </div>
             </div>
@@ -86,66 +88,15 @@
                             You are building a high-performance web application powered by <strong>FastAPI</strong> and
                             <strong>Jinja2</strong> templates.
                         </p>
-                        <div class="p-2 rounded bg-light border small text-muted">
+                        <div class="p-2 rounded bg-light border small text-muted mb-2">
                             💡 <strong>Tip:</strong> HTML endpoints use <code>HTMLResponse</code>, while APIs return
                             native Python dictionaries as JSON.
                         </div>
-                    </div>
-
-                    <!-- Available Endpoints Widget -->
-                    <div class="sidebar-widget">
-                        <h3 class="widget-title">🔗 API Endpoints</h3>
-                        <ul class="list-unstyled mb-0 small">
-                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <span class="badge bg-success me-1">GET</span>
-                                    <code>/</code>
-                                </div>
-                                <span class="text-muted">Home Template</span>
-                            </li>
-                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <span class="badge bg-success me-1">GET</span>
-                                    <code>/posts</code>
-                                </div>
-                                <span class="text-muted">Posts Template</span>
-                            </li>
-                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <span class="badge bg-success me-1">GET</span>
-                                    <code>/api/posts</code>
-                                </div>
-                                <span class="text-muted">JSON Data</span>
-                            </li>
-                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <span class="badge bg-success me-1">GET</span>
-                                    <code>/users/{id}/posts</code>
-                                </div>
-                                <span class="text-muted">User's Posts</span>
-                            </li>
-                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <span class="badge bg-success me-1">GET</span>
-                                    <code>/api/users</code>
-                                </div>
-                                <span class="text-muted">JSON Users</span>
-                            </li>
-                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <div>
-                                    <span class="badge bg-primary me-1">POST</span>
-                                    <code>/api/posts</code>
-                                </div>
-                                <span class="text-muted">Create Post</span>
-                            </li>
-                            <li class="d-flex justify-content-between align-items-center py-2">
-                                <div>
-                                    <span class="badge bg-info text-dark me-1">DOCS</span>
-                                    <code>/docs</code>
-                                </div>
-                                <span class="text-muted">Interactive OpenAPI</span>
-                            </li>
-                        </ul>
+                        <div class="p-2 rounded bg-light border small text-muted">
+                            🔐 <strong>How login works:</strong> the pages call the JSON API with
+                            <code>fetch()</code> and send your JWT as an
+                            <code>Authorization: Bearer</code> header.
+                        </div>
                     </div>
 
                     <!-- Helpful Links Widget -->
@@ -204,6 +155,12 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous">
     </script>
+
+    <!-- Our API client (token storage, fetch wrapper, navbar). Loaded on every page. -->
+    <script src="{{ url_for('static', path='js/api.js') }}"></script>
+
+    <!-- Page-specific JavaScript: child templates fill this block. -->
+    {% block scripts %}{% endblock scripts %}
 </body>
 
 </html>

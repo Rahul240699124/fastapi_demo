@@ -1,0 +1,27 @@
+{#
+  Bootstrap pagination for the home page.
+  Expects: page (current, 1-based), pages (total pages), search, sort.
+  Every link keeps the current search + sort, only the page number changes.
+  The `urlencode` filter turns a dict into  page=2&search=fast%20api&sort=newest
+#}
+{% if pages > 1 %}
+{% macro page_url(n) -%}
+    ?{{ {"page": n, "search": search or "", "sort": sort} | urlencode }}
+{%- endmacro %}
+<nav aria-label="Posts pages" class="mt-4">
+    <ul class="pagination justify-content-center mb-0">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ page_url(page - 1) }}" aria-label="Previous">&laquo;</a>
+        </li>
+        {% for n in range(1, pages + 1) %}
+            <li class="page-item {% if n == page %}active{% endif %}">
+                <a class="page-link" href="{{ page_url(n) }}"
+                    {% if n == page %}aria-current="page"{% endif %}>{{ n }}</a>
+            </li>
+        {% endfor %}
+        <li class="page-item {% if page >= pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ page_url(page + 1) }}" aria-label="Next">&raquo;</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
